@@ -1,0 +1,20 @@
+from pyspark.sql.types import *
+from pyspark.sql import *
+
+sc = SparkContext(master='local',appName='test')
+spark = SparkSession(sc)
+sqlcontext = SQLContext(sc)
+sqlcontext.setConf("spark.sql.parquet.compression.codec.","snappy")
+
+dfOne = spark.read.csv(path = '//test1.csv', sep = '', header=True)
+dfOne.write.parquet('//parquetOne')
+
+dfTwo = spark.read.format('parquet').load('//parquetInput').select('SKU','STORE','PRIMARY-SUPPLIER','STYLE','UNIT-COST','AV-COST','STATUS').filter("SKU">(2676) and "STATUS=='L'").
+
+
+
+dfThree = dfTwo.write.format('csv').option("header","true").mode("append").save('//parquetOutput')
+dfFour = dfThree.map(attributes => "PHY-LOC" + attributes(1))
+
+dfFour.groupBy('SKU','STORE').agg(count("SKU")).show()
+dfFour.write.format('csv').option("header","true").mode("append").save('//output.csv')
